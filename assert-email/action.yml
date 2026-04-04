@@ -1,0 +1,95 @@
+name: 'BrewMail Assert Email'
+description: 'Wait for an email and assert its properties. Posts results to GitHub Job Summary.'
+branding:
+  icon: 'check-circle'
+  color: 'green'
+
+inputs:
+  address:
+    description: 'BrewMail email address to check'
+    required: true
+  subject:
+    description: 'Assert exact subject match'
+    required: false
+  subject-contains:
+    description: 'Assert subject contains text'
+    required: false
+  from:
+    description: 'Assert sender address'
+    required: false
+  to:
+    description: 'Assert recipient address'
+    required: false
+  body-contains:
+    description: 'Assert body contains text'
+    required: false
+  timeout:
+    description: 'Wait timeout in seconds'
+    required: false
+    default: '30'
+
+outputs:
+  passed:
+    description: 'Whether all assertions passed'
+    value: ${{ steps.assert.outputs.passed }}
+  result:
+    description: 'Full assertion result JSON'
+    value: ${{ steps.assert.outputs.result }}
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Run email assertion
+      id: assert
+      shell: bash
+      run: |
+        ARGS="${{ inputs.address }}"
+        ARGS="$ARGS --timeout ${{ inputs.timeout }}"
+
+        if [ -n "${{ inputs.subject }}" ]; then
+          ARGS="$ARGS --subject \"${{ inputs.subject }}\""
+        fi
+        if [ -n "${{ inputs.subject-contains }}" ]; then
+          ARGS="$ARGS --subject-contains \"${{ inputs.subject-contains }}\""
+        fi
+        if [ -n "${{ inputs.from }}" ]; then
+          ARGS="$ARGS --from \"${{ inputs.from }}\""
+        fi
+        if [ -n "${{ inputs.to }}" ]; then
+          ARGS="$ARGS --to \"${{ inputs.to }}\""
+        fi
+        if [ -n "${{ inputs.body-contains }}" ]; then
+          ARGS="$ARGS --body-contains \"${{ inputs.body-contains }}\""
+        fi
+
+        set +e
+        RESULT=$(eval mailbrew assert $ARGS 2>&1)
+        EXIT_CODE=$?
+        set -e
+
+        echo "result<<EOF" >> $GITHUB_OUTPUT
+        echo "$RESULT" >> $GITHUB_OUTPUT
+        echo "EOF" >> $GITHUB_OUTPUT
+
+        if [ $EXIT_CODE -eq 0 ]; then
+          echo "passed=true" >> $GITHUB_OUTPUT
+        else
+          echo "passed=false" >> $GITHUB_OUTPUT
+        fi
+
+        # Write to Job Summary
+        echo "## BrewMail Email Assertion" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        if [ $EXIT_CODE -eq 0 ]; then
+          echo ":white_check_mark: **PASSED**" >> $GITHUB_STEP_SUMMARY
+        else
+          echo ":x: **FAILED**" >> $GITHUB_STEP_SUMMARY
+        fi
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo '```' >> $GITHUB_STEP_SUMMARY
+        echo "$RESULT" >> $GITHUB_STEP_SUMMARY
+        echo '```' >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "**Address:** \`${{ inputs.address }}\`" >> $GITHUB_STEP_SUMMARY
+
+        exit $EXIT_CODE

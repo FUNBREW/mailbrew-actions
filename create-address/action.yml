@@ -1,0 +1,28 @@
+name: 'BrewMail Create Address'
+description: 'Create a temporary BrewMail email address for E2E testing'
+branding:
+  icon: 'plus-circle'
+  color: 'blue'
+
+inputs:
+  ttl:
+    description: 'Address time-to-live in seconds'
+    required: false
+    default: '3600'
+
+outputs:
+  address:
+    description: 'The created email address'
+    value: ${{ steps.create.outputs.address }}
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Create address
+      id: create
+      shell: bash
+      run: |
+        RESULT=$(mailbrew create-address --ttl ${{ inputs.ttl }})
+        ADDRESS=$(echo "$RESULT" | awk '{print $1}')
+        echo "address=$ADDRESS" >> $GITHUB_OUTPUT
+        echo "Created address: $ADDRESS"
