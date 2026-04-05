@@ -1,6 +1,6 @@
 # BrewMail GitHub Actions
 
-Official GitHub Actions for [BrewMail](https://brewmail.dev) — E2E email testing in your CI pipeline.
+Official GitHub Actions for [BrewMail](https://mailbrew.dev) — E2E email testing in your CI pipeline.
 
 ## Actions
 
@@ -56,7 +56,7 @@ Installs the BrewMail CLI and sets the API key in the environment.
 - uses: brewmail/setup@v1
   with:
     api-key: ${{ secrets.BREWMAIL_API_KEY }}
-    # base-url: https://brewmail.dev  # optional
+    # base-url: https://mailbrew.dev  # optional
     # version: latest                  # optional
 ```
 

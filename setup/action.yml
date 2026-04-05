@@ -11,7 +11,7 @@ inputs:
   base-url:
     description: 'BrewMail API base URL'
     required: false
-    default: 'https://brewmail.dev'
+    default: 'https://mailbrew.dev'
   version:
     description: 'CLI version to install'
     required: false

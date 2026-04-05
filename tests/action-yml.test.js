@@ -20,7 +20,7 @@ describe('setup action.yml', () => {
     });
 
     test('base-url has default', () => {
-        expect(action.inputs['base-url'].default).toBe('https://brewmail.dev');
+        expect(action.inputs['base-url'].default).toBe('https://mailbrew.dev');
     });
 
     test('has install, configure, and verify steps', () => {
