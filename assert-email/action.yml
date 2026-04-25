@@ -1,4 +1,4 @@
-name: 'BrewMail Assert Email'
+name: 'MailBrew Assert Email'
 description: 'Wait for an email and assert its properties. Posts results to GitHub Job Summary.'
 branding:
   icon: 'check-circle'
@@ -6,7 +6,7 @@ branding:
 
 inputs:
   address:
-    description: 'BrewMail email address to check'
+    description: 'MailBrew email address to check'
     required: true
   subject:
     description: 'Assert exact subject match'
@@ -78,7 +78,7 @@ runs:
         fi
 
         # Write to Job Summary
-        echo "## BrewMail Email Assertion" >> $GITHUB_STEP_SUMMARY
+        echo "## MailBrew Email Assertion" >> $GITHUB_STEP_SUMMARY
         echo "" >> $GITHUB_STEP_SUMMARY
         if [ $EXIT_CODE -eq 0 ]; then
           echo ":white_check_mark: **PASSED**" >> $GITHUB_STEP_SUMMARY

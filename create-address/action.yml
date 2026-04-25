@@ -1,5 +1,5 @@
-name: 'BrewMail Create Address'
-description: 'Create a temporary BrewMail email address for E2E testing'
+name: 'MailBrew Create Address'
+description: 'Create a temporary MailBrew email address for E2E testing'
 branding:
   icon: 'plus-circle'
   color: 'blue'

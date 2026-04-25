@@ -1,5 +1,5 @@
 {
-  "name": "@brewmail/github-action-tests",
+  "name": "@mailbrew/github-action-tests",
   "private": true,
   "type": "module",
   "devDependencies": {

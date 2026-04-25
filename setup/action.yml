@@ -1,15 +1,15 @@
-name: 'BrewMail Setup'
-description: 'Install BrewMail CLI and configure API key for E2E email testing'
+name: 'MailBrew Setup'
+description: 'Install MailBrew CLI and configure API key for E2E email testing'
 branding:
   icon: 'mail'
   color: 'blue'
 
 inputs:
   api-key:
-    description: 'BrewMail API key'
+    description: 'MailBrew API key'
     required: true
   base-url:
-    description: 'BrewMail API base URL'
+    description: 'MailBrew API base URL'
     required: false
     default: 'https://mailbrew.dev'
   version:
@@ -20,15 +20,15 @@ inputs:
 runs:
   using: 'composite'
   steps:
-    - name: Install BrewMail CLI
+    - name: Install MailBrew CLI
       shell: bash
-      run: npm install -g @brewmail/cli@${{ inputs.version }}
+      run: npm install -g @mailbrew/cli@${{ inputs.version }}
 
     - name: Configure environment
       shell: bash
       run: |
-        echo "BREWMAIL_API_KEY=${{ inputs.api-key }}" >> $GITHUB_ENV
-        echo "BREWMAIL_BASE_URL=${{ inputs.base-url }}" >> $GITHUB_ENV
+        echo "MAILBREW_API_KEY=${{ inputs.api-key }}" >> $GITHUB_ENV
+        echo "MAILBREW_BASE_URL=${{ inputs.base-url }}" >> $GITHUB_ENV
 
     - name: Verify installation
       shell: bash

@@ -11,7 +11,7 @@ describe('setup action.yml', () => {
     const action = loadAction('setup');
 
     test('has required fields', () => {
-        expect(action.name).toBe('BrewMail Setup');
+        expect(action.name).toBe('MailBrew Setup');
         expect(action.runs.using).toBe('composite');
     });
 
@@ -35,7 +35,7 @@ describe('create-address action.yml', () => {
     const action = loadAction('create-address');
 
     test('has required fields', () => {
-        expect(action.name).toBe('BrewMail Create Address');
+        expect(action.name).toBe('MailBrew Create Address');
         expect(action.runs.using).toBe('composite');
     });
 
@@ -52,7 +52,7 @@ describe('assert-email action.yml', () => {
     const action = loadAction('assert-email');
 
     test('has required fields', () => {
-        expect(action.name).toBe('BrewMail Assert Email');
+        expect(action.name).toBe('MailBrew Assert Email');
         expect(action.runs.using).toBe('composite');
     });
 
