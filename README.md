@@ -2,8 +2,6 @@
 
 Official GitHub Actions for [MailBrew](https://mailbrew.dev) — E2E email testing in your CI pipeline.
 
-> **Migrating from `brewmail/*` actions?** The actions were renamed to `mailbrew/*`. See [Migration](#migration) below.
-
 ## Actions
 
 | Action | Description |
@@ -25,12 +23,12 @@ jobs:
       - uses: actions/checkout@v4
 
       # 1. Install MailBrew CLI
-      - uses: mailbrew/setup@v2
+      - uses: FUNBREW/mailbrew-actions/setup@v2
         with:
           api-key: ${{ secrets.MAILBREW_API_KEY }}
 
       # 2. Create a temporary email address
-      - uses: mailbrew/create-address@v2
+      - uses: FUNBREW/mailbrew-actions/create-address@v2
         id: email
         with:
           ttl: 300
@@ -42,7 +40,7 @@ jobs:
             -d "email=${{ steps.email.outputs.address }}"
 
       # 4. Assert the email arrived with correct content
-      - uses: mailbrew/assert-email@v2
+      - uses: FUNBREW/mailbrew-actions/assert-email@v2
         with:
           address: ${{ steps.email.outputs.address }}
           subject-contains: "Welcome"
@@ -55,7 +53,7 @@ jobs:
 Installs the MailBrew CLI and sets the API key in the environment.
 
 ```yaml
-- uses: mailbrew/setup@v2
+- uses: FUNBREW/mailbrew-actions/setup@v2
   with:
     api-key: ${{ secrets.MAILBREW_API_KEY }}
     # base-url: https://mailbrew.dev  # optional
@@ -67,7 +65,7 @@ Installs the MailBrew CLI and sets the API key in the environment.
 Creates a temporary email address and outputs it for use in later steps.
 
 ```yaml
-- uses: mailbrew/create-address@v2
+- uses: FUNBREW/mailbrew-actions/create-address@v2
   id: email
   with:
     ttl: 300  # 5 minutes
@@ -80,7 +78,7 @@ Creates a temporary email address and outputs it for use in later steps.
 Waits for an email and asserts its properties. Results are posted to the GitHub Job Summary.
 
 ```yaml
-- uses: mailbrew/assert-email@v2
+- uses: FUNBREW/mailbrew-actions/assert-email@v2
   with:
     address: ${{ steps.email.outputs.address }}
     subject-contains: "Welcome"
@@ -99,7 +97,7 @@ Waits for an email and asserts its properties. Results are posted to the GitHub 
 ### Using outputs in subsequent steps
 
 ```yaml
-- uses: mailbrew/assert-email@v2
+- uses: FUNBREW/mailbrew-actions/assert-email@v2
   id: check
   continue-on-error: true
   with:
@@ -126,17 +124,3 @@ Use the CLI directly for email sequence testing:
 ## Job Summary
 
 The assert-email action automatically writes results to the GitHub Job Summary, showing pass/fail status with details for each assertion.
-
-## Migration
-
-In v2.0:
-
-| Before | After |
-| ------ | ----- |
-| `uses: brewmail/setup@v1` | `uses: mailbrew/setup@v2` |
-| `uses: brewmail/create-address@v1` | `uses: mailbrew/create-address@v2` |
-| `uses: brewmail/assert-email@v1` | `uses: mailbrew/assert-email@v2` |
-| `secrets.BREWMAIL_API_KEY` | `secrets.MAILBREW_API_KEY` |
-| `BREWMAIL_*` env vars | `MAILBREW_*` |
-
-The CLI command (`mailbrew`), action inputs, and outputs are unchanged.
