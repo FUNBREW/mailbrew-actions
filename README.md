@@ -2,53 +2,6 @@
 
 Official GitHub Actions for [MailBrew](https://mailbrew.dev) — E2E email testing in your CI pipeline.
 
-> **Note:** These actions are not yet published. `FUNBREW/mailbrew-actions` has no release tags yet, so `uses: FUNBREW/mailbrew-actions/...@v2` does not resolve, and the `setup` action installs `@mailbrew/cli`, which is not yet published to npm either. Until they are, call the REST API with `curl` as shown in [Using the REST API directly (works today)](#using-the-rest-api-directly-works-today).
-
-## Using the REST API directly (works today)
-
-```yaml
-name: E2E Email Tests
-on: [push]
-
-jobs:
-  test:
-    runs-on: ubuntu-latest
-    env:
-      MAILBREW_API_KEY: ${{ secrets.MAILBREW_API_KEY }}
-      MAILBREW_API: https://mailbrew.dev/api/mailbrew
-    steps:
-      - uses: actions/checkout@v4
-
-      # 1. Create a temporary email address (ttl in seconds)
-      - name: Create address
-        id: email
-        run: |
-          address=$(curl -fsS -X POST "$MAILBREW_API/addresses" \
-            -H "X-API-Key: $MAILBREW_API_KEY" -H "Content-Type: application/json" \
-            -d '{"ttl": 300}' | jq -r '.data.address')
-          echo "address=$address" >> "$GITHUB_OUTPUT"
-
-      # 2. Your app sends an email
-      - name: Trigger signup email
-        run: |
-          curl -X POST http://localhost:3000/signup \
-            -d "email=${{ steps.email.outputs.address }}"
-
-      # 3. Wait for the email (server-side long polling, up to 60 seconds) and assert its content
-      - name: Assert email
-        run: |
-          address="${{ steps.email.outputs.address }}"
-          id=$(curl -fsS "$MAILBREW_API/addresses/$address/emails/wait?timeout=30" \
-            -H "X-API-Key: $MAILBREW_API_KEY" | jq -r '.data[0].id // empty')
-          test -n "$id" || { echo "No email arrived"; exit 1; }
-          curl -fsS -X POST "$MAILBREW_API/addresses/$address/emails/$id/assert" \
-            -H "X-API-Key: $MAILBREW_API_KEY" -H "Content-Type: application/json" \
-            -d '{"subject_contains": "Welcome", "body_contains": "verify your email"}' \
-            | jq -e '.data.passed' > /dev/null
-```
-
-The API returns `429` with a `Retry-After` header (seconds) when you exceed your plan's rate limit (Free: 10 requests/minute).
-
 ## Actions
 
 | Action | Description |
@@ -171,3 +124,48 @@ Use the CLI directly for email sequence testing:
 ## Job Summary
 
 The assert-email action automatically writes results to the GitHub Job Summary, showing pass/fail status with details for each assertion.
+
+## Using the REST API directly (without the actions)
+
+```yaml
+name: E2E Email Tests
+on: [push]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    env:
+      MAILBREW_API_KEY: ${{ secrets.MAILBREW_API_KEY }}
+      MAILBREW_API: https://mailbrew.dev/api/mailbrew
+    steps:
+      - uses: actions/checkout@v4
+
+      # 1. Create a temporary email address (ttl in seconds)
+      - name: Create address
+        id: email
+        run: |
+          address=$(curl -fsS -X POST "$MAILBREW_API/addresses" \
+            -H "X-API-Key: $MAILBREW_API_KEY" -H "Content-Type: application/json" \
+            -d '{"ttl": 300}' | jq -r '.data.address')
+          echo "address=$address" >> "$GITHUB_OUTPUT"
+
+      # 2. Your app sends an email
+      - name: Trigger signup email
+        run: |
+          curl -X POST http://localhost:3000/signup \
+            -d "email=${{ steps.email.outputs.address }}"
+
+      # 3. Wait for the email (server-side long polling, up to 60 seconds) and assert its content
+      - name: Assert email
+        run: |
+          address="${{ steps.email.outputs.address }}"
+          id=$(curl -fsS "$MAILBREW_API/addresses/$address/emails/wait?timeout=30" \
+            -H "X-API-Key: $MAILBREW_API_KEY" | jq -r '.data[0].id // empty')
+          test -n "$id" || { echo "No email arrived"; exit 1; }
+          curl -fsS -X POST "$MAILBREW_API/addresses/$address/emails/$id/assert" \
+            -H "X-API-Key: $MAILBREW_API_KEY" -H "Content-Type: application/json" \
+            -d '{"subject_contains": "Welcome", "body_contains": "verify your email"}' \
+            | jq -e '.data.passed' > /dev/null
+```
+
+The API returns `429` with a `Retry-After` header (seconds) when you exceed your plan's rate limit (Free: 10 requests/minute).
