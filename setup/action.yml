@@ -22,13 +22,19 @@ runs:
   steps:
     - name: Install MailBrew CLI
       shell: bash
-      run: npm install -g @mailbrew/cli@${{ inputs.version }}
+      env:
+        MB_VERSION: ${{ inputs.version }}
+      run: npm install -g "@mailbrew/cli@${MB_VERSION}"
 
+    # Inputs are passed through env, never interpolated into the script (script injection).
     - name: Configure environment
       shell: bash
+      env:
+        MB_API_KEY: ${{ inputs.api-key }}
+        MB_BASE_URL: ${{ inputs.base-url }}
       run: |
-        echo "MAILBREW_API_KEY=${{ inputs.api-key }}" >> $GITHUB_ENV
-        echo "MAILBREW_BASE_URL=${{ inputs.base-url }}" >> $GITHUB_ENV
+        printf 'MAILBREW_API_KEY=%s\n' "$MB_API_KEY" >> "$GITHUB_ENV"
+        printf 'MAILBREW_BASE_URL=%s\n' "$MB_BASE_URL" >> "$GITHUB_ENV"
 
     - name: Verify installation
       shell: bash

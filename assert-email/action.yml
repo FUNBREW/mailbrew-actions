@@ -42,54 +42,56 @@ runs:
     - name: Run email assertion
       id: assert
       shell: bash
+      # Inputs are passed through env and built into an argument array, never eval'd (script injection).
+      env:
+        MB_ADDRESS: ${{ inputs.address }}
+        MB_TIMEOUT: ${{ inputs.timeout }}
+        MB_SUBJECT: ${{ inputs.subject }}
+        MB_SUBJECT_CONTAINS: ${{ inputs.subject-contains }}
+        MB_FROM: ${{ inputs.from }}
+        MB_TO: ${{ inputs.to }}
+        MB_BODY_CONTAINS: ${{ inputs.body-contains }}
       run: |
-        ARGS="${{ inputs.address }}"
-        ARGS="$ARGS --timeout ${{ inputs.timeout }}"
-
-        if [ -n "${{ inputs.subject }}" ]; then
-          ARGS="$ARGS --subject \"${{ inputs.subject }}\""
-        fi
-        if [ -n "${{ inputs.subject-contains }}" ]; then
-          ARGS="$ARGS --subject-contains \"${{ inputs.subject-contains }}\""
-        fi
-        if [ -n "${{ inputs.from }}" ]; then
-          ARGS="$ARGS --from \"${{ inputs.from }}\""
-        fi
-        if [ -n "${{ inputs.to }}" ]; then
-          ARGS="$ARGS --to \"${{ inputs.to }}\""
-        fi
-        if [ -n "${{ inputs.body-contains }}" ]; then
-          ARGS="$ARGS --body-contains \"${{ inputs.body-contains }}\""
-        fi
+        ARGS=(assert "$MB_ADDRESS" --timeout "$MB_TIMEOUT")
+        [ -n "$MB_SUBJECT" ] && ARGS+=(--subject "$MB_SUBJECT")
+        [ -n "$MB_SUBJECT_CONTAINS" ] && ARGS+=(--subject-contains "$MB_SUBJECT_CONTAINS")
+        [ -n "$MB_FROM" ] && ARGS+=(--from "$MB_FROM")
+        [ -n "$MB_TO" ] && ARGS+=(--to "$MB_TO")
+        [ -n "$MB_BODY_CONTAINS" ] && ARGS+=(--body-contains "$MB_BODY_CONTAINS")
 
         set +e
-        RESULT=$(eval mailbrew assert $ARGS 2>&1)
+        RESULT=$(mailbrew "${ARGS[@]}" 2>&1)
         EXIT_CODE=$?
         set -e
 
-        echo "result<<EOF" >> $GITHUB_OUTPUT
-        echo "$RESULT" >> $GITHUB_OUTPUT
-        echo "EOF" >> $GITHUB_OUTPUT
+        DELIM="MAILBREW_RESULT_$(date +%s%N)"
+        {
+          echo "result<<$DELIM"
+          printf '%s\n' "$RESULT"
+          echo "$DELIM"
+        } >> "$GITHUB_OUTPUT"
 
         if [ $EXIT_CODE -eq 0 ]; then
-          echo "passed=true" >> $GITHUB_OUTPUT
+          echo "passed=true" >> "$GITHUB_OUTPUT"
         else
-          echo "passed=false" >> $GITHUB_OUTPUT
+          echo "passed=false" >> "$GITHUB_OUTPUT"
         fi
 
         # Write to Job Summary
-        echo "## MailBrew Email Assertion" >> $GITHUB_STEP_SUMMARY
-        echo "" >> $GITHUB_STEP_SUMMARY
-        if [ $EXIT_CODE -eq 0 ]; then
-          echo ":white_check_mark: **PASSED**" >> $GITHUB_STEP_SUMMARY
-        else
-          echo ":x: **FAILED**" >> $GITHUB_STEP_SUMMARY
-        fi
-        echo "" >> $GITHUB_STEP_SUMMARY
-        echo '```' >> $GITHUB_STEP_SUMMARY
-        echo "$RESULT" >> $GITHUB_STEP_SUMMARY
-        echo '```' >> $GITHUB_STEP_SUMMARY
-        echo "" >> $GITHUB_STEP_SUMMARY
-        echo "**Address:** \`${{ inputs.address }}\`" >> $GITHUB_STEP_SUMMARY
+        {
+          echo "## MailBrew Email Assertion"
+          echo ""
+          if [ $EXIT_CODE -eq 0 ]; then
+            echo ":white_check_mark: **PASSED**"
+          else
+            echo ":x: **FAILED**"
+          fi
+          echo ""
+          echo '```'
+          printf '%s\n' "$RESULT"
+          echo '```'
+          echo ""
+          printf '**Address:** `%s`\n' "$MB_ADDRESS"
+        } >> "$GITHUB_STEP_SUMMARY"
 
         exit $EXIT_CODE

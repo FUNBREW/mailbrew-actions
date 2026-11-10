@@ -21,8 +21,10 @@ runs:
     - name: Create address
       id: create
       shell: bash
+      env:
+        MB_TTL: ${{ inputs.ttl }}
       run: |
-        RESULT=$(mailbrew create-address --ttl ${{ inputs.ttl }})
-        ADDRESS=$(echo "$RESULT" | awk '{print $1}')
-        echo "address=$ADDRESS" >> $GITHUB_OUTPUT
+        RESULT=$(mailbrew create-address --ttl "$MB_TTL")
+        ADDRESS=$(printf '%s\n' "$RESULT" | awk '{print $1}')
+        printf 'address=%s\n' "$ADDRESS" >> "$GITHUB_OUTPUT"
         echo "Created address: $ADDRESS"
