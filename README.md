@@ -123,6 +123,10 @@ Use the CLI directly for email sequence testing:
       --timeout 60
 ```
 
+## CI run results
+
+The CLI that these actions run reads `GITHUB_RUN_ID`, `GITHUB_RUN_ATTEMPT`, `GITHUB_SHA` and `GITHUB_HEAD_REF` / `GITHUB_REF_NAME` from the runner and sends them with every request. The **Test Results** screen in the dashboard then groups assertion results by workflow run and flags **flaky** checks (the same commit both passed and failed). Nothing to configure. Set `MAILBREW_RUN_ID` / `MAILBREW_COMMIT` / `MAILBREW_BRANCH` in `env:` to override; in your own `mailbrew` steps, `--test "<name>"` names the check and `--no-ci` turns it off.
+
 ## Job Summary
 
 The assert-email action automatically writes results to the GitHub Job Summary, showing pass/fail status with details for each assertion.
