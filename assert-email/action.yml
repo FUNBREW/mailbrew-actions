@@ -21,7 +21,28 @@ inputs:
     description: 'Assert recipient address'
     required: false
   body-contains:
-    description: 'Assert body contains text'
+    description: 'Assert body contains text (case-insensitive)'
+    required: false
+  subject-matches:
+    description: 'Assert subject matches a regex (no delimiters, no "/")'
+    required: false
+  body-matches:
+    description: 'Assert body matches a regex'
+    required: false
+  body-not-contains:
+    description: 'Assert body does not contain text'
+    required: false
+  html-contains:
+    description: 'Assert HTML body contains text'
+    required: false
+  header:
+    description: 'Assert a header exists: "Name" or "Name: value" (value is a case-insensitive substring)'
+    required: false
+  has-attachment:
+    description: 'Assert the email has (true) or has no (false) attachments'
+    required: false
+  attachment-filename:
+    description: 'Assert an attachment has this file name'
     required: false
   timeout:
     description: 'Wait timeout in seconds'
@@ -51,6 +72,13 @@ runs:
         MB_FROM: ${{ inputs.from }}
         MB_TO: ${{ inputs.to }}
         MB_BODY_CONTAINS: ${{ inputs.body-contains }}
+        MB_SUBJECT_MATCHES: ${{ inputs.subject-matches }}
+        MB_BODY_MATCHES: ${{ inputs.body-matches }}
+        MB_BODY_NOT_CONTAINS: ${{ inputs.body-not-contains }}
+        MB_HTML_CONTAINS: ${{ inputs.html-contains }}
+        MB_HEADER: ${{ inputs.header }}
+        MB_HAS_ATTACHMENT: ${{ inputs.has-attachment }}
+        MB_ATTACHMENT_FILENAME: ${{ inputs.attachment-filename }}
       run: |
         ARGS=(assert "$MB_ADDRESS" --timeout "$MB_TIMEOUT")
         [ -n "$MB_SUBJECT" ] && ARGS+=(--subject "$MB_SUBJECT")
@@ -58,6 +86,13 @@ runs:
         [ -n "$MB_FROM" ] && ARGS+=(--from "$MB_FROM")
         [ -n "$MB_TO" ] && ARGS+=(--to "$MB_TO")
         [ -n "$MB_BODY_CONTAINS" ] && ARGS+=(--body-contains "$MB_BODY_CONTAINS")
+        [ -n "$MB_SUBJECT_MATCHES" ] && ARGS+=(--subject-matches "$MB_SUBJECT_MATCHES")
+        [ -n "$MB_BODY_MATCHES" ] && ARGS+=(--body-matches "$MB_BODY_MATCHES")
+        [ -n "$MB_BODY_NOT_CONTAINS" ] && ARGS+=(--body-not-contains "$MB_BODY_NOT_CONTAINS")
+        [ -n "$MB_HTML_CONTAINS" ] && ARGS+=(--html-contains "$MB_HTML_CONTAINS")
+        [ -n "$MB_HEADER" ] && ARGS+=(--header "$MB_HEADER")
+        [ -n "$MB_HAS_ATTACHMENT" ] && ARGS+=(--has-attachment "$MB_HAS_ATTACHMENT")
+        [ -n "$MB_ATTACHMENT_FILENAME" ] && ARGS+=(--attachment-filename "$MB_ATTACHMENT_FILENAME")
 
         set +e
         RESULT=$(mailbrew "${ARGS[@]}" 2>&1)

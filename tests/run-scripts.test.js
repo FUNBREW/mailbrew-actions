@@ -78,11 +78,27 @@ describe('assert-email の実行', () => {
         expect(args).toEqual(['assert', 'a@acme.mailbrew.dev', '--timeout', '30', '--subject', 'Welcome']);
     });
 
+    test('新しい条件（2026-11-14）も 1 つずつ引数にする', () => {
+        const { args } = runStep(step(), {
+            MB_ADDRESS: 'a@acme.mailbrew.dev', MB_TIMEOUT: '30', MB_SUBJECT: '', MB_SUBJECT_CONTAINS: '', MB_FROM: '', MB_TO: '', MB_BODY_CONTAINS: '',
+            MB_SUBJECT_MATCHES: '^Welcome', MB_BODY_MATCHES: '\\d{6}', MB_BODY_NOT_CONTAINS: 'error', MB_HTML_CONTAINS: 'Unsubscribe',
+            MB_HEADER: 'List-Unsubscribe: mailto:', MB_HAS_ATTACHMENT: 'false', MB_ATTACHMENT_FILENAME: 'invoice.pdf',
+        });
+
+        expect(args).toEqual(['assert', 'a@acme.mailbrew.dev', '--timeout', '30',
+            '--subject-matches', '^Welcome', '--body-matches', '\\d{6}', '--body-not-contains', 'error', '--html-contains', 'Unsubscribe',
+            '--header', 'List-Unsubscribe: mailto:', '--has-attachment', 'false', '--attachment-filename', 'invoice.pdf']);
+    });
+
     test('step の env が、入力を MB_* に割り当てている', () => {
         expect(step().env).toMatchObject({
             MB_ADDRESS: '${{ inputs.address }}', MB_TIMEOUT: '${{ inputs.timeout }}', MB_SUBJECT: '${{ inputs.subject }}',
             MB_SUBJECT_CONTAINS: '${{ inputs.subject-contains }}', MB_FROM: '${{ inputs.from }}', MB_TO: '${{ inputs.to }}',
             MB_BODY_CONTAINS: '${{ inputs.body-contains }}',
+            MB_SUBJECT_MATCHES: '${{ inputs.subject-matches }}', MB_BODY_MATCHES: '${{ inputs.body-matches }}',
+            MB_BODY_NOT_CONTAINS: '${{ inputs.body-not-contains }}', MB_HTML_CONTAINS: '${{ inputs.html-contains }}',
+            MB_HEADER: '${{ inputs.header }}', MB_HAS_ATTACHMENT: '${{ inputs.has-attachment }}',
+            MB_ATTACHMENT_FILENAME: '${{ inputs.attachment-filename }}',
         });
     });
 });

@@ -87,6 +87,8 @@ Waits for an email and asserts its properties. Results are posted to the GitHub 
     timeout: 30
 ```
 
+More inputs: `subject-matches`, `body-matches` (regex), `body-not-contains`, `html-contains`, `header` (`"Name"` or `"Name: value"`), `has-attachment` (`true` / `false`), `attachment-filename`.
+
 ### Outputs
 
 | Output | Description |
